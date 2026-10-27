@@ -1,0 +1,33 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: minibank-postgres
+    environment:
+      POSTGRES_DB: ${DB_NAME:-minibank}
+      POSTGRES_USER: ${DB_USER:-minibank}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-minibank}
+    ports:
+      - "${DB_PORT:-5433}:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  app:
+    build: .
+    container_name: minibank-app
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/${DB_NAME:-minibank}
+      DB_USER: ${DB_USER:-minibank}
+      DB_PASSWORD: ${DB_PASSWORD:-minibank}
+    ports:
+      - "8080:8080"
+
+volumes:
+  postgres-data:

@@ -1,0 +1,18 @@
+# Build output
+target/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+amplicode.xml
+
+# Local environment overrides (may contain secrets)
+.env
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log

@@ -1,0 +1,24 @@
+spring:
+  application:
+    name: mini-bank
+
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5433/minibank}
+    username: ${DB_USER:minibank}
+    password: ${DB_PASSWORD:minibank}
+
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+
+server:
+  port: 8080
