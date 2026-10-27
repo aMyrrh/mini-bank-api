@@ -1,0 +1,77 @@
+package com.minibank.entity;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
+
+import java.math.BigDecimal;
+import java.time.Instant;
+
+@Entity
+@Table(name = "accounts")
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+public class Account {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(name = "account_number", nullable = false, updatable = false)
+    private String accountNumber;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "user_id", nullable = false, updatable = false)
+    private User owner;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "currency", nullable = false, updatable = false)
+    private Currency currency;
+
+    @Column(name = "balance", nullable = false, precision = 19, scale = 2)
+    private BigDecimal balance;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false)
+    private AccountStatus status;
+
+    @CreationTimestamp
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private Instant createdAt;
+
+    public Account(String accountNumber, User owner, Currency currency) {
+        this.accountNumber = accountNumber;
+        this.owner = owner;
+        this.currency = currency;
+        this.balance = BigDecimal.ZERO;
+        this.status = AccountStatus.ACTIVE;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof Account other)) {
+            return false;
+        }
+        return id != null && id.equals(other.getId());
+    }
+
+    @Override
+    public int hashCode() {
+        return Account.class.hashCode();
+    }
+}
