@@ -13,7 +13,7 @@ CREATE TABLE accounts
     CONSTRAINT fk_accounts_user FOREIGN KEY (user_id) REFERENCES users (id),
     CONSTRAINT chk_accounts_currency CHECK (currency IN ('RUB', 'USD', 'EUR')),
     CONSTRAINT chk_accounts_balance_non_negative CHECK (balance >= 0),
-    CONSTRAINT chk_accounts_status CHECK (status IN ('ACTIVE', 'BLOCKED', 'CLOSED'))
+    CONSTRAINT chk_accounts_status CHECK (status IN ('ACTIVE', 'CLOSED'))
 );
 
 CREATE INDEX idx_accounts_user_id ON accounts (user_id);

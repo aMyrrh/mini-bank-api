@@ -61,28 +61,12 @@ public class Account {
     }
 
     public void close() {
-        if (status != AccountStatus.ACTIVE) {
-            throw new BusinessRuleException("Only an active account can be closed");
+        if (status == AccountStatus.CLOSED) {
+            throw new BusinessRuleException("Account is already closed");
         }
         if (balance.signum() != 0) {
             throw new BusinessRuleException("Account with a non-zero balance cannot be closed");
         }
         status = AccountStatus.CLOSED;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (!(o instanceof Account other)) {
-            return false;
-        }
-        return id != null && id.equals(other.getId());
-    }
-
-    @Override
-    public int hashCode() {
-        return Account.class.hashCode();
     }
 }

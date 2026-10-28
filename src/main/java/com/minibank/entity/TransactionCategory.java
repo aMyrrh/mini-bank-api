@@ -1,6 +1,6 @@
 package com.minibank.entity;
 
-public enum OperationCategory {
+public enum TransactionCategory {
     GROCERIES,
     RESTAURANTS,
     TRANSPORT,

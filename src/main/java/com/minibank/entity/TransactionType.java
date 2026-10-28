@@ -1,6 +1,6 @@
 package com.minibank.entity;
 
-public enum OperationType {
+public enum TransactionType {
     DEPOSIT,
     TRANSFER
 }
