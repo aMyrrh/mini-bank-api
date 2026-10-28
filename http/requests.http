@@ -1,0 +1,79 @@
+@baseUrl = http://localhost:8080
+
+### Register a user
+POST {{baseUrl}}/api/users
+Content-Type: application/json
+
+{
+  "email": "user{{$timestamp}}@example.com",
+  "password": "password123",
+  "fullName": "Ivan Petrov"
+}
+
+> {% client.global.set("userId", response.body.id); %}
+
+### Register with invalid data -> 400 with fieldErrors
+POST {{baseUrl}}/api/users
+Content-Type: application/json
+
+{
+  "email": "not-an-email",
+  "password": "short",
+  "fullName": ""
+}
+
+### Current user
+GET {{baseUrl}}/api/users/me
+X-User-Id: {{userId}}
+
+### Change full name
+PATCH {{baseUrl}}/api/users/me
+X-User-Id: {{userId}}
+Content-Type: application/json
+
+{
+  "fullName": "Ivan Sidorov"
+}
+
+### Request without X-User-Id -> 400
+GET {{baseUrl}}/api/users/me
+
+### Open an account
+POST {{baseUrl}}/api/accounts
+X-User-Id: {{userId}}
+Content-Type: application/json
+
+{
+  "currency": "RUB"
+}
+
+> {% client.global.set("accountId", response.body.id); %}
+
+### Open an account with unsupported currency -> 400
+POST {{baseUrl}}/api/accounts
+X-User-Id: {{userId}}
+Content-Type: application/json
+
+{
+  "currency": "GBP"
+}
+
+### My accounts
+GET {{baseUrl}}/api/accounts
+X-User-Id: {{userId}}
+
+### My account by id
+GET {{baseUrl}}/api/accounts/{{accountId}}
+X-User-Id: {{userId}}
+
+### Someone else's account -> 404
+GET {{baseUrl}}/api/accounts/{{accountId}}
+X-User-Id: 999999
+
+### Close the account (zero balance)
+POST {{baseUrl}}/api/accounts/{{accountId}}/close
+X-User-Id: {{userId}}
+
+### Close it again -> 422
+POST {{baseUrl}}/api/accounts/{{accountId}}/close
+X-User-Id: {{userId}}
