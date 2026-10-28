@@ -49,6 +49,10 @@ public class User {
         this.role = role;
     }
 
+    public void changeFullName(String fullName) {
+        this.fullName = fullName;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {

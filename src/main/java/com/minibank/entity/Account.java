@@ -1,5 +1,6 @@
 package com.minibank.entity;
 
+import com.minibank.exception.BusinessRuleException;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -55,8 +56,18 @@ public class Account {
         this.accountNumber = accountNumber;
         this.owner = owner;
         this.currency = currency;
-        this.balance = BigDecimal.ZERO;
+        this.balance = new BigDecimal("0.00");
         this.status = AccountStatus.ACTIVE;
+    }
+
+    public void close() {
+        if (status != AccountStatus.ACTIVE) {
+            throw new BusinessRuleException("Only an active account can be closed");
+        }
+        if (balance.signum() != 0) {
+            throw new BusinessRuleException("Account with a non-zero balance cannot be closed");
+        }
+        status = AccountStatus.CLOSED;
     }
 
     @Override
