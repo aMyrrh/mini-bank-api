@@ -18,6 +18,7 @@ import org.hibernate.annotations.CreationTimestamp;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.UUID;
 
 @Entity
 @Table(name = "transactions")
@@ -51,17 +52,36 @@ public class Transaction {
     @Column(name = "description")
     private String description;
 
+    @Column(name = "idempotency_key", unique = true)
+    private UUID idempotencyKey;
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
-    public Transaction(TransactionType type, Account fromAccount, Account toAccount, BigDecimal amount,
-                       TransactionCategory category, String description) {
+    private Transaction(TransactionType type, Account fromAccount, Account toAccount, BigDecimal amount,
+                        TransactionCategory category, String description, UUID idempotencyKey) {
         this.type = type;
         this.fromAccount = fromAccount;
         this.toAccount = toAccount;
         this.amount = amount;
         this.category = category;
         this.description = description;
+        this.idempotencyKey = idempotencyKey;
+    }
+
+    public static Transaction deposit(Account toAccount, BigDecimal amount, String description, UUID idempotencyKey) {
+        return new Transaction(TransactionType.DEPOSIT, null, toAccount, amount, null, description, idempotencyKey);
+    }
+
+    public static Transaction transfer(Account fromAccount, Account toAccount, BigDecimal amount,
+                                       TransactionCategory category, String description, UUID idempotencyKey) {
+        return new Transaction(TransactionType.TRANSFER, fromAccount, toAccount, amount, category, description,
+                idempotencyKey);
+    }
+
+    public boolean involves(Account account) {
+        return toAccount.getId().equals(account.getId())
+                || (fromAccount != null && fromAccount.getId().equals(account.getId()));
     }
 }

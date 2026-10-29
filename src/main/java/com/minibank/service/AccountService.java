@@ -50,7 +50,9 @@ public class AccountService {
 
     @Transactional
     public AccountResponse close(Long userId, Long accountId) {
-        Account account = findOwnAccount(userId, accountId);
+        Account account = accountRepository.findByIdForUpdate(accountId)
+                .filter(a -> a.getOwner().getId().equals(userId))
+                .orElseThrow(() -> new NotFoundException("Account " + accountId + " not found"));
         account.close();
         return accountMapper.toResponse(account);
     }

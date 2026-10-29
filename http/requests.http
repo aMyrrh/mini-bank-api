@@ -70,10 +70,95 @@ X-User-Id: {{userId}}
 GET {{baseUrl}}/api/accounts/{{accountId}}
 X-User-Id: 999999
 
-### Close the account (zero balance)
+### Deposit
+< {% client.global.set("depositKey", $random.uuid); %}
+POST {{baseUrl}}/api/accounts/{{accountId}}/deposit
+X-User-Id: {{userId}}
+Idempotency-Key: {{depositKey}}
+Content-Type: application/json
+
+{
+  "amount": 1000.00,
+  "description": "Salary"
+}
+
+### Repeat the same deposit (same key) -> same transaction, balance changes only once
+POST {{baseUrl}}/api/accounts/{{accountId}}/deposit
+X-User-Id: {{userId}}
+Idempotency-Key: {{depositKey}}
+Content-Type: application/json
+
+{
+  "amount": 1000.00,
+  "description": "Salary"
+}
+
+### Deposit with three decimal places -> 400
+POST {{baseUrl}}/api/accounts/{{accountId}}/deposit
+X-User-Id: {{userId}}
+Idempotency-Key: {{$random.uuid}}
+Content-Type: application/json
+
+{
+  "amount": 10.555
+}
+
+### Second account to transfer to
+POST {{baseUrl}}/api/accounts
+X-User-Id: {{userId}}
+Content-Type: application/json
+
+{
+  "currency": "RUB"
+}
+
+> {% client.global.set("secondAccountNumber", response.body.accountNumber); %}
+
+### Transfer
+POST {{baseUrl}}/api/transfers
+X-User-Id: {{userId}}
+Idempotency-Key: {{$random.uuid}}
+Content-Type: application/json
+
+{
+  "fromAccountId": {{accountId}},
+  "toAccountNumber": "{{secondAccountNumber}}",
+  "amount": 250.50,
+  "category": "GROCERIES",
+  "description": "Weekly shopping"
+}
+
+### Transfer more than the balance -> 422
+POST {{baseUrl}}/api/transfers
+X-User-Id: {{userId}}
+Idempotency-Key: {{$random.uuid}}
+Content-Type: application/json
+
+{
+  "fromAccountId": {{accountId}},
+  "toAccountNumber": "{{secondAccountNumber}}",
+  "amount": 1000000.00
+}
+
+### Close an account with money -> 422
 POST {{baseUrl}}/api/accounts/{{accountId}}/close
 X-User-Id: {{userId}}
 
+### Open an empty account to close it
+POST {{baseUrl}}/api/accounts
+X-User-Id: {{userId}}
+Content-Type: application/json
+
+{
+  "currency": "EUR"
+}
+
+> {% client.global.set("emptyAccountId", response.body.id); %}
+
+### Close the empty account
+POST {{baseUrl}}/api/accounts/{{emptyAccountId}}/close
+X-User-Id: {{userId}}
+
 ### Close it again -> 422
-POST {{baseUrl}}/api/accounts/{{accountId}}/close
+POST {{baseUrl}}/api/accounts/{{emptyAccountId}}/close
 X-User-Id: {{userId}}

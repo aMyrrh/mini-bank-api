@@ -60,6 +60,25 @@ public class Account {
         this.status = AccountStatus.ACTIVE;
     }
 
+    public void deposit(BigDecimal amount) {
+        checkActive();
+        balance = balance.add(amount);
+    }
+
+    public void withdraw(BigDecimal amount) {
+        checkActive();
+        if (balance.compareTo(amount) < 0) {
+            throw new BusinessRuleException("Insufficient funds on account " + accountNumber);
+        }
+        balance = balance.subtract(amount);
+    }
+
+    private void checkActive() {
+        if (status == AccountStatus.CLOSED) {
+            throw new BusinessRuleException("Account " + accountNumber + " is closed");
+        }
+    }
+
     public void close() {
         if (status == AccountStatus.CLOSED) {
             throw new BusinessRuleException("Account is already closed");
