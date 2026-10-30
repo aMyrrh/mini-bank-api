@@ -6,11 +6,11 @@ import com.minibank.service.AccountService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -26,7 +26,7 @@ public class AccountController {
     private final AccountService accountService;
 
     @PostMapping
-    public ResponseEntity<AccountResponse> open(@RequestHeader("X-User-Id") Long userId,
+    public ResponseEntity<AccountResponse> open(@AuthenticationPrincipal Long userId,
                                                 @Valid @RequestBody CreateAccountRequest request) {
         AccountResponse account = accountService.open(userId, request);
         URI location = ServletUriComponentsBuilder.fromCurrentRequest()
@@ -37,17 +37,17 @@ public class AccountController {
     }
 
     @GetMapping
-    public List<AccountResponse> getAll(@RequestHeader("X-User-Id") Long userId) {
+    public List<AccountResponse> getAll(@AuthenticationPrincipal Long userId) {
         return accountService.getAll(userId);
     }
 
     @GetMapping("/{id}")
-    public AccountResponse getById(@RequestHeader("X-User-Id") Long userId, @PathVariable Long id) {
+    public AccountResponse getById(@AuthenticationPrincipal Long userId, @PathVariable Long id) {
         return accountService.getById(userId, id);
     }
 
     @PostMapping("/{id}/close")
-    public AccountResponse close(@RequestHeader("X-User-Id") Long userId, @PathVariable Long id) {
+    public AccountResponse close(@AuthenticationPrincipal Long userId, @PathVariable Long id) {
         return accountService.close(userId, id);
     }
 }

@@ -64,7 +64,7 @@ public class Transaction {
         this.type = type;
         this.fromAccount = fromAccount;
         this.toAccount = toAccount;
-        this.amount = amount;
+        this.amount = amount.setScale(2);
         this.category = category;
         this.description = description;
         this.idempotencyKey = idempotencyKey;

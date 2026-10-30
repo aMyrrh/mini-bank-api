@@ -10,10 +10,12 @@ import com.minibank.exception.NotFoundException;
 import com.minibank.mapper.UserMapper;
 import com.minibank.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Locale;
 
 @Service
@@ -33,6 +35,11 @@ public class UserService {
 
         User user = new User(email, passwordEncoder.encode(request.password()), request.fullName().trim(), Role.USER);
         return userMapper.toResponse(userRepository.save(user));
+    }
+
+    @Transactional(readOnly = true)
+    public List<UserResponse> getAll() {
+        return userMapper.toResponses(userRepository.findAll(Sort.by("id")));
     }
 
     @Transactional(readOnly = true)

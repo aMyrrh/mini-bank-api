@@ -7,6 +7,7 @@ import com.minibank.service.TransactionService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -24,7 +25,7 @@ public class TransactionController {
 
     @PostMapping("/api/accounts/{id}/deposit")
     @ResponseStatus(HttpStatus.CREATED)
-    public TransactionResponse deposit(@RequestHeader("X-User-Id") Long userId,
+    public TransactionResponse deposit(@AuthenticationPrincipal Long userId,
                                        @RequestHeader("Idempotency-Key") UUID idempotencyKey,
                                        @PathVariable Long id,
                                        @Valid @RequestBody DepositRequest request) {
@@ -33,7 +34,7 @@ public class TransactionController {
 
     @PostMapping("/api/transfers")
     @ResponseStatus(HttpStatus.CREATED)
-    public TransactionResponse transfer(@RequestHeader("X-User-Id") Long userId,
+    public TransactionResponse transfer(@AuthenticationPrincipal Long userId,
                                         @RequestHeader("Idempotency-Key") UUID idempotencyKey,
                                         @Valid @RequestBody TransferRequest request) {
         return transactionService.transfer(userId, request, idempotencyKey);

@@ -22,3 +22,13 @@ spring:
 
 server:
   port: 8080
+
+jwt:
+  # Local development value only; set JWT_SECRET in any real environment
+  secret: ${JWT_SECRET:LMdDWZPQ5v06zwQgcFz6a59OSOoX6Jhx0VnBxGrENFg=}
+  expiration-minutes: 60
+
+app:
+  admin:
+    email: ${ADMIN_EMAIL:admin@minibank.local}
+    password: ${ADMIN_PASSWORD:admin12345}

@@ -1,19 +1,38 @@
 @baseUrl = http://localhost:8080
 
 ### Register a user
-POST {{baseUrl}}/api/users
+< {% client.global.set("email", "user" + Date.now() + "@example.com"); %}
+POST {{baseUrl}}/api/auth/register
 Content-Type: application/json
 
 {
-  "email": "user{{$timestamp}}@example.com",
+  "email": "{{email}}",
   "password": "password123",
   "fullName": "Ivan Petrov"
 }
 
-> {% client.global.set("userId", response.body.id); %}
+### Log in
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{email}}",
+  "password": "password123"
+}
+
+> {% client.global.set("token", response.body.accessToken); %}
+
+### Log in with a wrong password -> 401
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{email}}",
+  "password": "wrong-password"
+}
 
 ### Register with invalid data -> 400 with fieldErrors
-POST {{baseUrl}}/api/users
+POST {{baseUrl}}/api/auth/register
 Content-Type: application/json
 
 {
@@ -24,23 +43,42 @@ Content-Type: application/json
 
 ### Current user
 GET {{baseUrl}}/api/users/me
-X-User-Id: {{userId}}
+Authorization: Bearer {{token}}
 
 ### Change full name
 PATCH {{baseUrl}}/api/users/me
-X-User-Id: {{userId}}
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
   "fullName": "Ivan Sidorov"
 }
 
-### Request without X-User-Id -> 400
+### Request without a token -> 401
 GET {{baseUrl}}/api/users/me
+
+### Admin endpoint as a regular user -> 403
+GET {{baseUrl}}/api/admin/users
+Authorization: Bearer {{token}}
+
+### Log in as admin (credentials from application.yml, local only)
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@minibank.local",
+  "password": "admin12345"
+}
+
+> {% client.global.set("adminToken", response.body.accessToken); %}
+
+### All users (admin only)
+GET {{baseUrl}}/api/admin/users
+Authorization: Bearer {{adminToken}}
 
 ### Open an account
 POST {{baseUrl}}/api/accounts
-X-User-Id: {{userId}}
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
@@ -51,7 +89,7 @@ Content-Type: application/json
 
 ### Open an account with unsupported currency -> 400
 POST {{baseUrl}}/api/accounts
-X-User-Id: {{userId}}
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
@@ -60,20 +98,20 @@ Content-Type: application/json
 
 ### My accounts
 GET {{baseUrl}}/api/accounts
-X-User-Id: {{userId}}
+Authorization: Bearer {{token}}
 
 ### My account by id
 GET {{baseUrl}}/api/accounts/{{accountId}}
-X-User-Id: {{userId}}
+Authorization: Bearer {{token}}
 
-### Someone else's account -> 404
+### Someone else's account (admin does not own it) -> 404
 GET {{baseUrl}}/api/accounts/{{accountId}}
-X-User-Id: 999999
+Authorization: Bearer {{adminToken}}
 
 ### Deposit
 < {% client.global.set("depositKey", $random.uuid); %}
 POST {{baseUrl}}/api/accounts/{{accountId}}/deposit
-X-User-Id: {{userId}}
+Authorization: Bearer {{token}}
 Idempotency-Key: {{depositKey}}
 Content-Type: application/json
 
@@ -84,7 +122,7 @@ Content-Type: application/json
 
 ### Repeat the same deposit (same key) -> same transaction, balance changes only once
 POST {{baseUrl}}/api/accounts/{{accountId}}/deposit
-X-User-Id: {{userId}}
+Authorization: Bearer {{token}}
 Idempotency-Key: {{depositKey}}
 Content-Type: application/json
 
@@ -95,7 +133,7 @@ Content-Type: application/json
 
 ### Deposit with three decimal places -> 400
 POST {{baseUrl}}/api/accounts/{{accountId}}/deposit
-X-User-Id: {{userId}}
+Authorization: Bearer {{token}}
 Idempotency-Key: {{$random.uuid}}
 Content-Type: application/json
 
@@ -105,7 +143,7 @@ Content-Type: application/json
 
 ### Second account to transfer to
 POST {{baseUrl}}/api/accounts
-X-User-Id: {{userId}}
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
@@ -116,7 +154,7 @@ Content-Type: application/json
 
 ### Transfer
 POST {{baseUrl}}/api/transfers
-X-User-Id: {{userId}}
+Authorization: Bearer {{token}}
 Idempotency-Key: {{$random.uuid}}
 Content-Type: application/json
 
@@ -130,7 +168,7 @@ Content-Type: application/json
 
 ### Transfer more than the balance -> 422
 POST {{baseUrl}}/api/transfers
-X-User-Id: {{userId}}
+Authorization: Bearer {{token}}
 Idempotency-Key: {{$random.uuid}}
 Content-Type: application/json
 
@@ -142,11 +180,11 @@ Content-Type: application/json
 
 ### Close an account with money -> 422
 POST {{baseUrl}}/api/accounts/{{accountId}}/close
-X-User-Id: {{userId}}
+Authorization: Bearer {{token}}
 
 ### Open an empty account to close it
 POST {{baseUrl}}/api/accounts
-X-User-Id: {{userId}}
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
@@ -157,8 +195,8 @@ Content-Type: application/json
 
 ### Close the empty account
 POST {{baseUrl}}/api/accounts/{{emptyAccountId}}/close
-X-User-Id: {{userId}}
+Authorization: Bearer {{token}}
 
 ### Close it again -> 422
 POST {{baseUrl}}/api/accounts/{{emptyAccountId}}/close
-X-User-Id: {{userId}}
+Authorization: Bearer {{token}}
