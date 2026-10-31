@@ -178,6 +178,30 @@ Content-Type: application/json
   "amount": 1000000.00
 }
 
+### Transaction history, first page
+GET {{baseUrl}}/api/accounts/{{accountId}}/transactions?page=0&size=10
+Authorization: Bearer {{token}}
+
+### History filtered by type and period
+GET {{baseUrl}}/api/accounts/{{accountId}}/transactions?type=TRANSFER&from=2026-01-01&to=2026-12-31
+Authorization: Bearer {{token}}
+
+### History with a page size over the limit -> 400
+GET {{baseUrl}}/api/accounts/{{accountId}}/transactions?size=1000
+Authorization: Bearer {{token}}
+
+### Statement for a period
+GET {{baseUrl}}/api/accounts/{{accountId}}/statement?from=2026-01-01&to=2026-12-31
+Authorization: Bearer {{token}}
+
+### Statement without dates -> 400
+GET {{baseUrl}}/api/accounts/{{accountId}}/statement
+Authorization: Bearer {{token}}
+
+### Expenses by category (transfers between own accounts are not counted)
+GET {{baseUrl}}/api/analytics/expenses?from=2026-01-01&to=2026-12-31
+Authorization: Bearer {{token}}
+
 ### Close an account with money -> 422
 POST {{baseUrl}}/api/accounts/{{accountId}}/close
 Authorization: Bearer {{token}}
